@@ -91,6 +91,35 @@
     .lib-name { font-family:'DM Mono',monospace;font-size:0.85rem;color:var(--brown-mid);margin-bottom:0.5rem; }
     .lib-desc { font-size:0.85rem;color:var(--text-muted);line-height:1.6; }
 
+    /* CODE SHOWCASE */
+    .code-section { background: var(--brown-deep); }
+    .code-section .section-title { color: var(--cream); }
+    .code-section .section-label { color: var(--gold); }
+    .code-window {
+      margin-top: 2.5rem;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+      position: relative;
+    }
+    .code-window-bar {
+      background: #1e1e1e;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .code-window-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .code-window-dot:nth-child(1) { background: #ff5f57; }
+    .code-window-dot:nth-child(2) { background: #febc2e; }
+    .code-window-dot:nth-child(3) { background: #28c840; }
+    .code-window-title { margin-left: 0.75rem; font-family:'DM Mono',monospace; font-size:0.7rem; color:rgba(255,255,255,0.3); letter-spacing:0.05em; }
+    .code-window img { width:100%; display:block; transition: transform 0.6s ease; }
+    .code-window:hover img { transform: scale(1.01); }
+    .code-tags { display:flex; gap:0.75rem; margin-top:1.25rem; flex-wrap:wrap; }
+    .code-tag { font-family:'DM Mono',monospace; font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.3rem 0.7rem; border:1px solid rgba(212,168,67,0.2); color:rgba(212,168,67,0.6); border-radius:1px; }
+
     /* FOOTER */
     footer { background:var(--brown-deep);padding:3rem 2rem;text-align:center; }
     footer p { font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:0.1em;color:rgba(245,239,230,0.25); }
@@ -202,6 +231,30 @@
     </div>
   </section>
 
+  <section class="code-section">
+    <div class="container">
+      <p class="section-label">Behind the Scenes</p>
+      <h2 class="section-title" style="color:var(--cream)">The Code</h2>
+      <p style="font-size:0.9rem;color:rgba(245,239,230,0.45);line-height:1.7;max-width:600px;margin-bottom:0;">Built in PyCharm using a Jupyter notebook. The snippet below shows the core correlation analysis — computing the relationship between cocoa percentage and rating using <code style="font-family:'DM Mono',monospace;color:var(--gold);font-size:0.85em;">sns.jointplot</code> and Pandas <code style="font-family:'DM Mono',monospace;color:var(--gold);font-size:0.85em;">.corr()</code>.</p>
+      <div class="code-window">
+        <div class="code-window-bar">
+          <div class="code-window-dot"></div>
+          <div class="code-window-dot"></div>
+          <div class="code-window-dot"></div>
+          <span class="code-window-title">sample.ipynb — PyCharm</span>
+        </div>
+        <img src="pycharm.png" alt="PyCharm Jupyter notebook showing cocoa percentage vs rating correlation code"/>
+      </div>
+      <div class="code-tags">
+        <span class="code-tag">Jupyter Notebook</span>
+        <span class="code-tag">PyCharm</span>
+        <span class="code-tag">sns.jointplot</span>
+        <span class="code-tag">.corr()</span>
+        <span class="code-tag">Python 3.14</span>
+      </div>
+    </div>
+  </section>
+
   <footer>
     <p>Data source: flavors_of_cacao.csv &nbsp;·&nbsp; Built with Python, Pandas, Seaborn &amp; Matplotlib</p>
   </footer>
@@ -221,4 +274,3 @@
 
 </body>
 </html>
-
