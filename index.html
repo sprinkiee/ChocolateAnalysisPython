@@ -1,1 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chocolate Ratings Analysis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #f5efe6; --warm-white: #faf7f2;
+      --brown-deep: #2c1a0e; --brown-mid: #5c3317;
+      --caramel: #c27c3e; --gold: #d4a843;
+      --text: #1e1008; --text-muted: #7a6352;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--warm-white); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; overflow-x: hidden; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9999; opacity: 0.4;
+    }
+
+    /* HERO */
+    .hero { min-height: 100vh; background: var(--brown-deep); position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 4rem 2rem; }
+    .hero-bg-circles { position: absolute; inset: 0; pointer-events: none; }
+    .hero-bg-circles span { position: absolute; border-radius: 50%; border: 1px solid rgba(212,168,67,0.15); animation: pulse-ring 6s ease-in-out infinite; }
+    .hero-bg-circles span:nth-child(1) { width:600px;height:600px;top:-200px;right:-150px; }
+    .hero-bg-circles span:nth-child(2) { width:400px;height:400px;top:-100px;right:-50px;animation-delay:1s; }
+    .hero-bg-circles span:nth-child(3) { width:800px;height:800px;bottom:-300px;left:-200px;animation-delay:2s;border-color:rgba(194,124,62,0.1); }
+    @keyframes pulse-ring { 0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.03);opacity:0.6;} }
+
+    .hero-content { position: relative; z-index: 2; text-align: center; max-width: 800px; }
+    .hero-label { font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem;opacity:0;animation:fade-up 0.8s 0.2s forwards; }
+    .hero-title { font-family:'Playfair Display',serif;font-size:clamp(3rem,8vw,6.5rem);color:var(--cream);line-height:1.05;letter-spacing:-0.02em;opacity:0;animation:fade-up 0.8s 0.4s forwards; }
+    .hero-title em { font-style:italic;color:var(--gold); }
+    .hero-subtitle { margin-top:1.5rem;font-size:1.05rem;color:rgba(245,239,230,0.55);line-height:1.6;max-width:500px;margin-left:auto;margin-right:auto;opacity:0;animation:fade-up 0.8s 0.6s forwards; }
+    .hero-meta { margin-top:2.5rem;display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;opacity:0;animation:fade-up 0.8s 0.8s forwards; }
+    .hero-meta-item { display:flex;align-items:center;gap:0.5rem;font-family:'DM Mono',monospace;font-size:0.75rem;color:rgba(245,239,230,0.4);letter-spacing:0.05em; }
+    .hero-meta-item .dot { width:6px;height:6px;border-radius:50%;background:var(--caramel); }
+    .scroll-hint { position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:0.5rem;opacity:0;animation:fade-up 0.8s 1.2s forwards; }
+    .scroll-hint span { font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(245,239,230,0.3); }
+    .scroll-line { width:1px;height:40px;background:linear-gradient(to bottom,var(--gold),transparent);animation:scroll-bob 2s ease-in-out infinite; }
+    @keyframes scroll-bob { 0%,100%{transform:scaleY(1);opacity:1;}50%{transform:scaleY(0.6);opacity:0.4;} }
+    @keyframes fade-up { from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);} }
+
+    /* SHARED */
+    section { padding: 6rem 2rem; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    .section-label { font-family:'DM Mono',monospace;font-size:0.68rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--caramel);margin-bottom:0.75rem; }
+    .section-title { font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3rem);line-height:1.1;color:var(--brown-deep);margin-bottom:2.5rem; }
+
+    /* OVERVIEW */
+    .overview { background: var(--cream); }
+    .overview-grid { display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:2rem; }
+    @media(max-width:600px){ .overview-grid{grid-template-columns:1fr;} }
+    .overview-card { background:var(--warm-white);border:1px solid rgba(92,51,23,0.1);padding:1.75rem;border-radius:2px;transition:border-color 0.3s,transform 0.3s; }
+    .overview-card:hover { border-color:var(--caramel);transform:translateY(-2px); }
+    .card-icon { font-size:1.5rem;margin-bottom:0.75rem; }
+    .card-title { font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.5rem; }
+    .card-value { font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--brown-deep); }
+
+    /* INSIGHTS */
+    .insights { background: var(--brown-deep); }
+    .insights .section-title { color: var(--cream); }
+    .insights .section-label { color: var(--gold); }
+    .insight-list { display:flex;flex-direction:column; }
+    .insight-item { display:grid;grid-template-columns:60px 1fr;gap:1.5rem;align-items:start;padding:2rem 0;border-bottom:1px solid rgba(245,239,230,0.08);opacity:0;transform:translateX(-15px);transition:opacity 0.6s,transform 0.6s; }
+    .insight-item.visible { opacity:1;transform:translateX(0); }
+    .insight-num { font-family:'Playfair Display',serif;font-size:3.5rem;color:rgba(212,168,67,0.2);line-height:1;font-style:italic; }
+    .insight-title { font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--cream);margin-bottom:0.6rem; }
+    .insight-text { font-size:0.9rem;color:rgba(245,239,230,0.5);line-height:1.7; }
+    .insight-text strong { color:var(--gold);font-weight:500; }
+    .insight-tag { display:inline-block;margin-top:0.75rem;font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.25rem 0.6rem;border:1px solid rgba(212,168,67,0.3);color:var(--gold);border-radius:1px; }
+
+    /* CHARTS */
+    .charts { background: var(--warm-white); }
+    .charts-grid { display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:2.5rem; }
+    .charts-grid .wide { grid-column: 1 / -1; }
+    @media(max-width:650px){ .charts-grid{grid-template-columns:1fr;} .charts-grid .wide{grid-column:auto;} }
+    .chart-frame { border:1px solid rgba(92,51,23,0.12);padding:0.5rem;background:var(--cream);display:flex;flex-direction:column; }
+    .chart-frame img { width:100%;display:block;object-fit:cover; }
+    .chart-caption { margin-top:0.75rem;margin-bottom:0.25rem;font-family:'DM Mono',monospace;font-size:0.68rem;letter-spacing:0.1em;color:var(--text-muted);text-align:center; }
+
+    /* LIBRARIES */
+    .libraries { background: var(--cream); padding: 5rem 2rem; }
+    .lib-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(92,51,23,0.12);border:1px solid rgba(92,51,23,0.12);margin-top:2rem; }
+    @media(max-width:600px){ .lib-grid{grid-template-columns:1fr;} }
+    .lib-item { background:var(--cream);padding:2rem 1.75rem;transition:background 0.3s; }
+    .lib-item:hover { background:var(--warm-white); }
+    .lib-name { font-family:'DM Mono',monospace;font-size:0.85rem;color:var(--brown-mid);margin-bottom:0.5rem; }
+    .lib-desc { font-size:0.85rem;color:var(--text-muted);line-height:1.6; }
+
+    /* FOOTER */
+    footer { background:var(--brown-deep);padding:3rem 2rem;text-align:center; }
+    footer p { font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:0.1em;color:rgba(245,239,230,0.25); }
+    footer a { color:var(--gold);text-decoration:none; }
+    footer a:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <div class="hero-bg-circles"><span></span><span></span><span></span></div>
+    <div class="hero-content">
+      <p class="hero-label">Data Analysis Project</p>
+      <h1 class="hero-title">The Science of <em>Fine</em> Chocolate</h1>
+      <p class="hero-subtitle">Exploring how cocoa percentage, origin, manufacturer country, and year influence expert chocolate ratings.</p>
+      <div class="hero-meta">
+        <div class="hero-meta-item"><span class="dot"></span>flavors_of_cacao.csv</div>
+        <div class="hero-meta-item"><span class="dot"></span>Python · Pandas · Seaborn</div>
+        <div class="hero-meta-item"><span class="dot"></span>4 Key Insights</div>
+      </div>
+    </div>
+    <div class="scroll-hint"><span>Scroll</span><div class="scroll-line"></div></div>
+  </section>
+
+  <section class="overview">
+    <div class="container">
+      <p class="section-label">Project Overview</p>
+      <h2 class="section-title">What are we analysing?</h2>
+      <div class="overview-grid">
+        <div class="overview-card"><div class="card-icon">🎯</div><div class="card-title">Objective</div><div class="card-value">Factor influence on customer ratings</div></div>
+        <div class="overview-card"><div class="card-icon">📊</div><div class="card-title">Data Source</div><div class="card-value">flavors_of_cacao.csv</div></div>
+        <div class="overview-card"><div class="card-icon">🌍</div><div class="card-title">Variables Studied</div><div class="card-value">Cocoa %, manufacturer country, bean origin, review year</div></div>
+        <div class="overview-card"><div class="card-icon">🔍</div><div class="card-title">Method</div><div class="card-value">Correlation analysis &amp; visual exploration</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="insights">
+    <div class="container">
+      <p class="section-label">Findings</p>
+      <h2 class="section-title" style="color:var(--cream)">Key Insights</h2>
+      <div class="insight-list">
+        <div class="insight-item">
+          <div class="insight-num">01</div>
+          <div class="insight-body">
+            <div class="insight-title">Cocoa % vs Rating</div>
+            <p class="insight-text">The correlation is slightly negative (<strong>−0.16</strong>). Contrary to popular belief, 100% cocoa chocolate tends to get lower reviews. The sweet spot for high ratings is between <strong>65% and 75%</strong> cocoa.</p>
+            <span class="insight-tag">r = −0.16</span>
+          </div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-num">02</div>
+          <div class="insight-body">
+            <div class="insight-title">Yearly Progress</div>
+            <p class="insight-text">A weak positive correlation between review year and rating (<strong>r = 0.10</strong>) suggests a gradual improvement in chocolate quality — or a gradual decrease in reviewer pickiness — over time.</p>
+            <span class="insight-tag">r = 0.10</span>
+          </div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-num">03</div>
+          <div class="insight-body">
+            <div class="insight-title">Best Bean Origins</div>
+            <p class="insight-text">The highest-rated beans consistently come from <strong>Honduras</strong>, <strong>Guatemala</strong>, and <strong>Vietnam</strong> — regions producing beans with particularly complex flavour profiles.</p>
+            <span class="insight-tag">Bean Origin</span>
+          </div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-num">04</div>
+          <div class="insight-body">
+            <div class="insight-title">Top Manufacturer Countries</div>
+            <p class="insight-text">Countries with the best average manufacturing ratings are <strong>Vietnam</strong>, <strong>Brazil</strong>, and <strong>Australia</strong>, pointing to strong artisan chocolate cultures in these regions.</p>
+            <span class="insight-tag">Manufacturing</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="charts">
+    <div class="container">
+      <p class="section-label">Visualisations</p>
+      <h2 class="section-title">Data at a Glance</h2>
+      <div class="charts-grid">
+        <div class="chart-frame">
+          <img src="Distribution.png" alt="Cocoa Percentage vs Rating distribution scatter plot"/>
+          <p class="chart-caption">Fig 1 — Cocoa % vs Rating Distribution</p>
+        </div>
+        <div class="chart-frame">
+          <img src="Year_corr.png" alt="Review Year vs Average Rating trend"/>
+          <p class="chart-caption">Fig 2 — Rating Trend Over Years</p>
+        </div>
+        <div class="chart-frame wide">
+          <img src="Total_corr.png" alt="Correlation heatmap of ReviewYear, CocoaPercentage and Rating"/>
+          <p class="chart-caption">Fig 3 — Correlation Matrix: ReviewYear · CocoaPercentage · Rating</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="libraries">
+    <div class="container">
+      <p class="section-label">Tech Stack</p>
+      <h2 class="section-title">Libraries Used</h2>
+      <div class="lib-grid">
+        <div class="lib-item"><div class="lib-name">Pandas</div><p class="lib-desc">Data loading, cleaning, and DataFrame manipulation throughout the analysis pipeline.</p></div>
+        <div class="lib-item"><div class="lib-name">Seaborn</div><p class="lib-desc">Primary visualisation library — scatter plots, regression lines, heatmaps, and distribution plots.</p></div>
+        <div class="lib-item"><div class="lib-name">Matplotlib</div><p class="lib-desc">Fine-tuning of Seaborn outputs — labels, titles, figure sizing, and layout adjustments.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Data source: flavors_of_cacao.csv &nbsp;·&nbsp; Built with Python, Pandas, Seaborn &amp; Matplotlib</p>
+  </footer>
+
+  <script>
+    const items = document.querySelectorAll('.insight-item');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('visible'), i * 120);
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    items.forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
 
